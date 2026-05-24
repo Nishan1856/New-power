@@ -1,0 +1,51 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local Remote = Instance.new("RemoteEvent")
+Remote.Name = "GodModeRemote"
+Remote.Parent = ReplicatedStorage
+
+local GodPlayers = {}
+
+Remote.OnServerEvent:Connect(function(player, enabled)
+	GodPlayers[player] = enabled
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	GodPlayers[player] = nil
+end)
+
+RunService.Heartbeat:Connect(function()
+
+	for player,enabled in pairs(GodPlayers) do
+
+		if enabled and player.Character then
+
+			local character = player.Character
+			local humanoid = character:FindFirstChild("Humanoid")
+
+			if humanoid then
+
+				humanoid.MaxHealth = math.huge
+				humanoid.Health = humanoid.MaxHealth
+
+				humanoid.PlatformStand = false
+
+				humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
+				humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+
+				for _,v in pairs(character:GetDescendants()) do
+					if v:IsA("BodyVelocity")
+					or v:IsA("BodyForce")
+					or v:IsA("LinearVelocity")
+					or v:IsA("VectorForce")
+					or v:IsA("BodyGyro") then
+						v:Destroy()
+					end
+				end
+
+			end
+		end
+	end
+end)
